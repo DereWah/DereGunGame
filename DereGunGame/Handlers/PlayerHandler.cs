@@ -21,33 +21,59 @@ namespace DereGunGame.Handlers
 
         public void OnDied(DiedEventArgs ev)
         {
+            Log.Info("OnDied");
+
+            if (Round.IsEnded) return;
+
             ev.Player.ClearInventory();
-            Log.Info("ph1");
             plugin.Leaderboard[ev.Attacker] = plugin.Leaderboard[ev.Attacker] + 1;
-            Log.Info("ph2");
-            ev.Attacker.Broadcast(3, $"You killed {ev.Player.Nickname}.");
-            Log.Info("ph2");
             if (plugin.Leaderboard[ev.Attacker] > plugin.Config.GunLevels.Count()-1)
             {
+                if(Round.IsEnded) return;
+                Round.EndRound();
                 Map.ClearBroadcasts();
                 Map.Broadcast(5, $"{ev.Attacker.Nickname} has won the GunGame!");
-                Round.EndRound();
+                
+            }
+            else
+            {
+                GunLevel gunLevel = plugin.Config.GunLevels.ContainsKey(plugin.Leaderboard[ev.Attacker]) ? plugin.Config.GunLevels[plugin.Leaderboard[ev.Attacker]] : null;
+                if (gunLevel == null) return;
+                gunLevel.giveLoadout(ev.Attacker);
+                ev.Attacker.Broadcast(5, $"LV: {plugin.Leaderboard[ev.Attacker]+1} / {plugin.Config.GunLevels.Count()}", shouldClearPrevious: true);
             }
         }
 
         public void OnReload(ReloadingWeaponEventArgs ev)
         {
+            Log.Info("Reload");
             if(ev.IsAllowed) ev.Player.SetAmmo(ev.Firearm.AmmoType, 100);
+        }
+
+        public void OnChangingRole(ChangingRoleEventArgs ev)
+        {
+            if (Round.IsEnded) return;
+
+
+            if (!plugin.Leaderboard.ContainsKey(ev.Player)) plugin.Leaderboard.Add(ev.Player, 0);
+
+            if (ev.NewRole == RoleTypeId.Spectator)
+            {
+                GunLevel gunLevel = plugin.Config.GunLevels.ContainsKey(plugin.Leaderboard[ev.Player]) ? plugin.Config.GunLevels[plugin.Leaderboard[ev.Player]] : null;
+                if (gunLevel != null) ev.NewRole = gunLevel.Appearance;
+            }
         }
 
         public void OnPlayerSpawned(SpawnedEventArgs ev)
         {
-            if (!plugin.Leaderboard.ContainsKey(ev.Player)) plugin.Leaderboard.Add(ev.Player, 0);
+            if (Round.IsEnded) return;
+
+            Log.Info("Spawned");
+
 
             GunLevel gunLevel = plugin.Config.GunLevels.ContainsKey(plugin.Leaderboard[ev.Player]) ? plugin.Config.GunLevels[plugin.Leaderboard[ev.Player]] : null;
 
-            if (ev.Player.Role.Type == RoleTypeId.Spectator && gunLevel != null) gunLevel.spawnPlayer(ev.Player);
-            else
+            if (ev.Player.Role.Type != RoleTypeId.Spectator && gunLevel != null)
             {
                 ev.Player.Teleport(plugin.Config.SpawnLocations.Values.ToList().RandomItem());
 
@@ -56,6 +82,17 @@ namespace DereGunGame.Handlers
             }
 
 
+        }
+
+        public void OnDroppingItem(DroppingItemEventArgs ev)
+        {
+            ev.IsAllowed = false;
+        }
+
+        public void OnPickingUpItem(PickingUpItemEventArgs ev)
+        {
+            ev.Pickup.Destroy();
+            ev.IsAllowed = false;
         }
 
         public void OnLeft(LeftEventArgs ev)

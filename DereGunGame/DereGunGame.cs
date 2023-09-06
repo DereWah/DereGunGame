@@ -22,10 +22,6 @@ namespace DereGunGame
 
         private static readonly DereGunGame Singleton = new DereGunGame();
 
-        private DereGunGame()
-        {
-
-        }
 
         public static DereGunGame Instance => Singleton;
 
@@ -52,19 +48,26 @@ namespace DereGunGame
             serverHandler = new Handlers.ServerHandler(this);
 
             Server.RoundStarted += serverHandler.OnRoundStart;
+            Player.ChangingRole += playerHandler.OnChangingRole;
             Player.Spawned += playerHandler.OnPlayerSpawned;
             Player.Left += playerHandler.OnLeft;
             Player.Died += playerHandler.OnDied;
             Player.ReloadingWeapon += playerHandler.OnReload;
+            Player.DroppingItem += playerHandler.OnDroppingItem;
+            Player.PickingUpItem += playerHandler.OnPickingUpItem;
         }
 
         public void UnregisterEvents()
         {
             Server.RoundStarted -= serverHandler.OnRoundStart;
+            Player.ChangingRole -= playerHandler.OnChangingRole;
             Player.Spawned -= playerHandler.OnPlayerSpawned;
             Player.Left -= playerHandler.OnLeft;
             Player.Died -= playerHandler.OnDied;
             Player.ReloadingWeapon -= playerHandler.OnReload;
+            Player.DroppingItem -= playerHandler.OnDroppingItem;
+            Player.PickingUpItem -= playerHandler.OnPickingUpItem;
+
 
             playerHandler = null;
             serverHandler = null;
