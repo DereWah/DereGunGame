@@ -4,6 +4,7 @@ using CommandSystem;
 namespace DereGunGame.Commands
 {
     using Exiled.API.Features;
+    using Exiled.API.Features.Items;
     using Exiled.API.Features.Pickups;
 
 
@@ -23,7 +24,6 @@ namespace DereGunGame.Commands
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             Player player = Player.Get(sender);
-            
             
             response = $"Your location is ({player.Position}).";
 

@@ -1,6 +1,7 @@
 ﻿using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Features.Items;
+using InventorySystem.Items;
 using PlayerRoles;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,8 @@ namespace DereGunGame.Types
         [Description("The class the player will look like at this level. I recommend using only human-like classes.")]
         public RoleTypeId Appearance { get; set; }
 
+        public byte ReloadSpeedMultiplier { get; set; } = 2;
+
         [Description("The max amounth of health the player will have.")]
         public int MaxHealth { get; set; }
 
@@ -31,12 +34,22 @@ namespace DereGunGame.Types
             player.Role.Set(Appearance);
         }
 
-        public void giveLoadout(Player player)
+        public void giveLoadout(Player player, DereGunGame plugin)
         {
+            player.ClearInventory();
+            //foreach (AmmoType at in Enum.GetValues(typeof(AmmoType))) player.SetAmmo(at, 0);
             player.SetFriendlyFire(Appearance, 1);
             player.AddItem(Loadout);
+            
+            Jailbird jb = player.AddItem(ItemType.Jailbird) as Jailbird;
+            jb.FlashDuration = plugin.Config.JailbirdFlashDuration;
+            jb.ChargeDamage = plugin.Config.JailbirdChargeDamage;
+            jb.MeleeDamage = plugin.Config.JailbirdSwingDamage;
             player.EnableEffects(Effects);
             player.MaxHealth = MaxHealth;
+            
+            
+            player.Health = player.MaxHealth;
         }
 
     }

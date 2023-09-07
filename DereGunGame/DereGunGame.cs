@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;
+using Item = Exiled.Events.Handlers.Item;
+using UnityEngine;
 
 namespace DereGunGame
 {
@@ -29,6 +31,9 @@ namespace DereGunGame
         private Handlers.PlayerHandler playerHandler;
 
         public Dictionary<Exiled.API.Features.Player, int> Leaderboard = new();
+        public ZoneType roundZone;
+        public Dictionary<int, Vector3> roundSpawnpoints = new();
+
 
         public override void OnEnabled()
         {
@@ -48,26 +53,30 @@ namespace DereGunGame
             serverHandler = new Handlers.ServerHandler(this);
 
             Server.RoundStarted += serverHandler.OnRoundStart;
-            Player.ChangingRole += playerHandler.OnChangingRole;
             Player.Spawned += playerHandler.OnPlayerSpawned;
             Player.Left += playerHandler.OnLeft;
-            Player.Died += playerHandler.OnDied;
+            Player.Died += playerHandler.OnDead;
             Player.ReloadingWeapon += playerHandler.OnReload;
             Player.DroppingItem += playerHandler.OnDroppingItem;
             Player.PickingUpItem += playerHandler.OnPickingUpItem;
+            Player.Dying += playerHandler.OnDying;
+            Player.DroppingAmmo += playerHandler.OnDroppingAmmo;
+            Player.SpawningRagdoll += playerHandler.OnRagdoll;
+            Item.ChargingJailbird += playerHandler.OnChargingJailbird;
         }
 
         public void UnregisterEvents()
         {
             Server.RoundStarted -= serverHandler.OnRoundStart;
-            Player.ChangingRole -= playerHandler.OnChangingRole;
             Player.Spawned -= playerHandler.OnPlayerSpawned;
             Player.Left -= playerHandler.OnLeft;
-            Player.Died -= playerHandler.OnDied;
+            Player.Died -= playerHandler.OnDead;
             Player.ReloadingWeapon -= playerHandler.OnReload;
             Player.DroppingItem -= playerHandler.OnDroppingItem;
             Player.PickingUpItem -= playerHandler.OnPickingUpItem;
-
+            Player.Dying -= playerHandler.OnDying;
+            Player.DroppingAmmo -= playerHandler.OnDroppingAmmo;
+            Item.ChargingJailbird -= playerHandler.OnChargingJailbird;
 
             playerHandler = null;
             serverHandler = null;

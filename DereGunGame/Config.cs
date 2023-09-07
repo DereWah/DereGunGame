@@ -19,20 +19,50 @@ namespace DereGunGame
         public bool IsEnabled { get; set; } = true;
         public bool Debug { get; set; } = false;
 
+        public int HumiliationPenalty { get; set; } = -1;
+        public float RespawnDelay { get; set; } = 3f;
 
-        [Description("A list of the coordinates of all the possible spawn locations.")]
+        public float JailbirdSwingDamage { get; set; } = 30;
+        public float JailbirdChargeDamage { get; set; } = 50;
+        public float JailbirdFlashDuration { get; set; } = 0.01f;
+
+        [Description("One item of the list below will be randomly dropped whenever a player dies.")]
+        public Dictionary<int, ItemType> DeathDrops { get; set; } = new()
+        {
+            { 0, ItemType.Medkit },
+            { 1, ItemType.SCP1853 },
+            { 2, ItemType.Painkillers },
+            { 3, ItemType.Adrenaline }
+        };
+
+        [Description("The zones in which the game will take place. A random zone will be chosen at the start of the round.")]
+        public Dictionary<int, ZoneType> ZoneTypes { get; set; } = new()
+        {
+            { 0, ZoneType.Surface },
+            { 1, ZoneType.HeavyContainment},
+            { 2, ZoneType.LightContainment},
+            { 3, ZoneType.Entrance}
+        };
+
+        [Description("A list of the coordinates of all the possible spawn locations for the SURFACE.")]
         public Dictionary<int, Vector3> SpawnLocations { get; set; } = new()
         {
-            {
-                0,
-                new Vector3()
-                {
-                    x = 49,
-                    y = 991,
-                    z = -43
-                }
-            }
+            { 0, new Vector3() { x = 49, y = 991, z = -43 } },
+            { 1, new Vector3() { x = -8, y = 1001, z = 2 } },
+            { 2, new Vector3() { x = 0, y = 1001, z = 6 } },
+            { 3, new Vector3() { x = 11, y = 998, z = -15 } },
+            { 4, new Vector3() { x = 14, y = 999, z = -34 } },
+            { 5, new Vector3() { x = 4, y = 1001, z = -30 } },
+            { 6, new Vector3() { x = 19, y = 993, z = -35 } },
+            { 7, new Vector3() { x = 29, y = 992, z = -26 } },
+            { 8, new Vector3() { x = 8, y = 992, z = -35 } },
+            { 9, new Vector3() { x = 50, y = 992, z = -35 } },
+            { 10, new Vector3() { x = 61, y = 992, z = -51 } },
+            { 11, new Vector3() { x = 62, y = 996, z = -33 } },
+            { 12, new Vector3() { x = 108, y = 996, z = -33 } },
+            { 13, new Vector3() { x = 131, y = 995, z = -55 } }
         };
+
         [Description("A list of all the gun levels, and the loadouts. IDs of the gun levels must start from 0 and in order.")]
         public Dictionary<int, GunLevel> GunLevels { get; set; } = new()
         {
@@ -40,9 +70,9 @@ namespace DereGunGame
                 0,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunFSP9, ItemType.Medkit, ItemType.ArmorHeavy , ItemType.Ammo9x19 },
+                    Loadout = new() { ItemType.GunFSP9, ItemType.ArmorLight , ItemType.Ammo9x19 },
 
-                    Effects = new() { new Effect(EffectType.MovementBoost, 50, 1) },
+                    Effects = new() { new Effect(EffectType.MovementBoost, 9999, 50) },
                     Appearance = RoleTypeId.FacilityGuard,
                     MaxHealth = 100
                 }
@@ -51,8 +81,8 @@ namespace DereGunGame
                 1,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunCrossvec, ItemType.Medkit, ItemType.ArmorLight, ItemType.Ammo9x19 },
-                    Effects = new() { new Effect(EffectType.MovementBoost, 1, 1) },
+                    Loadout = new() { ItemType.GunCrossvec, ItemType.ArmorLight, ItemType.Ammo9x19 },
+                    Effects = new() { new Effect(EffectType.MovementBoost, 9999, 20) },
                     Appearance = RoleTypeId.NtfPrivate,
                     MaxHealth = 100
                 }
@@ -61,18 +91,18 @@ namespace DereGunGame
                 2,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunShotgun, ItemType.Medkit, ItemType.ArmorHeavy, ItemType.Ammo12gauge },
-                    Effects = new() { new Effect(EffectType.MovementBoost, 1, 1) },
+                    Loadout = new() { ItemType.GunShotgun, ItemType.ArmorHeavy, ItemType.Ammo12gauge },
+                    Effects = new() { new Effect(EffectType.MovementBoost, 9999, 10) },
                     Appearance = RoleTypeId.ChaosRepressor,
-                    MaxHealth = 50
+                    MaxHealth = 200
                 }
             },
             {
                 3,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunRevolver, ItemType.Medkit, ItemType.ArmorHeavy, ItemType.Ammo44cal },
-                    Effects = new() { new Effect(EffectType.MovementBoost, 1, 1) },
+                    Loadout = new() { ItemType.GunRevolver, ItemType.Ammo44cal },
+                    Effects = new() { new Effect(EffectType.MovementBoost, 9999, 1) },
                     Appearance = RoleTypeId.ChaosRepressor,
                     MaxHealth = 100
                 }
@@ -81,7 +111,7 @@ namespace DereGunGame
                 4,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunAK, ItemType.Medkit, ItemType.ArmorCombat, ItemType.Ammo762x39 },
+                    Loadout = new() { ItemType.GunAK, ItemType.ArmorCombat, ItemType.Ammo762x39 },
                     Effects = new() { new Effect(EffectType.MovementBoost, 1, 1) },
                     Appearance = RoleTypeId.ChaosRepressor,
                     MaxHealth = 100
@@ -91,7 +121,7 @@ namespace DereGunGame
                 5,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunE11SR, ItemType.Medkit, ItemType.ArmorCombat, ItemType.Ammo556x45 },
+                    Loadout = new() { ItemType.GunE11SR, ItemType.ArmorCombat, ItemType.Ammo556x45 },
                     Effects = new() { new Effect(EffectType.MovementBoost, 1, 1) },
                     Appearance = RoleTypeId.NtfSergeant,
                     MaxHealth = 100
@@ -101,7 +131,7 @@ namespace DereGunGame
                 6,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunFRMG0, ItemType.Medkit, ItemType.ArmorCombat, ItemType.Ammo556x45 },
+                    Loadout = new() { ItemType.GunFRMG0, ItemType.ArmorCombat, ItemType.Ammo556x45 },
                     Effects = new() { new Effect(EffectType.MovementBoost, 1, 1) },
                     Appearance = RoleTypeId.NtfCaptain,
                     MaxHealth = 100
@@ -131,10 +161,10 @@ namespace DereGunGame
                 9,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GrenadeHE, ItemType.Medkit, ItemType.ArmorCombat, ItemType.GrenadeHE, ItemType.GrenadeHE },
-                    Effects = new() { new Effect(EffectType.MovementBoost, 50, 1) },
+                    Loadout = new() { ItemType.GunFSP9, ItemType.ArmorCombat, ItemType.GrenadeHE, ItemType.GrenadeHE },
+                    Effects = new() { new Effect(EffectType.MovementBoost, 9999, 1) },
                     Appearance = RoleTypeId.ClassD,
-                    MaxHealth = 200
+                    MaxHealth = 80
                 }
             },
             {
