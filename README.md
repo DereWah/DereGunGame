@@ -13,3 +13,6 @@ Humiliations will also happen when you kill yourself, by falling down or with a 
 ## Rounds and Spawnpoints
 Each round takes place in one of the 4 zones (you can also specify which zones you want in the config). Spawnpoints are calculated smartly, to avoid spawning a player in the middle of a fight between others. You can setup a spawn radius to adjust this value.
 
+## Special Thanks
+I would like to thank Matteoninja, Sir.Simoo (Lo 096 infuriato) and .cuaio and the members of the OmegaSCP community for helping out in testing the gamemode. Without your help and feedback I would've never managed to find a lot of bugs <3
+
