@@ -18,6 +18,10 @@ namespace DereGunGame
         public bool IsEnabled { get; set; } = true;
         public bool Debug { get; set; } = false;
 
+
+        [Description("If true, every round will be a GunGame. If false, while in Lobby you'll have to type the command forcestartgungame to turn it on for the following round.")]
+        public bool AlwaysStart { get; set; } = false;
+
         [Description("Seconds in between respawning.")]
         public float RespawnDelay { get; set; } = 3f;
 
@@ -48,7 +52,7 @@ namespace DereGunGame
             { 3, ZoneType.Entrance}
         };
 
-        [Description("A list of the coordinates of all the possible spawn locations for the SURFACE.")]
+        [Description("A list of the coordinates of all the possible spawn locations for the SURFACE. While in other Zones, door positions will be used for spawnpoints.")]
         public Dictionary<int, Vector3> SpawnLocations { get; set; } = new()
         {
             { 0, new Vector3() { x = 49, y = 991, z = -43 } },

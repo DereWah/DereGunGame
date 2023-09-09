@@ -25,10 +25,14 @@ namespace DereGunGame.Handlers
 
         public void OnDecontamination(DecontaminatingEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
             ev.IsAllowed = false;
         }
         public void OnRoundStart()
         {
+            if (DereGunGame.Singleton.Config.AlwaysStart) DereGunGame.Singleton.GunGameRound = true;
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
             Round.IsLocked = true;
             plugin.Leaderboard.Clear();
             plugin.roundZone = plugin.Config.ZoneTypes.GetRandomValue().Value;

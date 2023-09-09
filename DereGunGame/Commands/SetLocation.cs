@@ -4,9 +4,7 @@ using CommandSystem;
 namespace DereGunGame.Commands
 {
     using Exiled.API.Features;
-    using Exiled.API.Features.Items;
-    using Exiled.API.Features.Pickups;
-
+    using Exiled.Permissions.Extensions;
 
     [CommandHandler(typeof(RemoteAdminCommandHandler))]
     public class SetLocation : ICommand
@@ -18,14 +16,18 @@ namespace DereGunGame.Commands
         public string[] Aliases { get; } = new[] { "getloc" };
 
         /// <inheritdoc/>
-        public string Description { get; } = "Set a spawn location for the GunGame plugin.";
+        public string Description { get; } = "Get your world location coordinates.";
 
         /// <inheritdoc/>
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
+            if (!sender.CheckPermission("deregungame.getlocation"))
+            {
+                response = "You don't have the permission deregungame.getlocation";
+                return false;
+            }
             Player player = Player.Get(sender);
-            
-            response = $"Your location is ({player.Position}).";
+            response = $"Your location is {player.Position}. Add it in the config to add a new location for the surface zone GunGame..";
 
             // Return true if the command was executed successfully; otherwise, false.
             return true;

@@ -26,11 +26,15 @@ namespace DereGunGame.Handlers
 
         public void OnRagdoll(SpawningRagdollEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
             ev.IsAllowed = false;
         }
 
         public void OnDying(DyingEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
             //remove all drops, including AMMOS
             foreach (AmmoType at in Enum.GetValues(typeof(AmmoType))) ev.Player.SetAmmo(at, 0);
             ev.Player.ClearInventory();
@@ -78,6 +82,8 @@ namespace DereGunGame.Handlers
 
         public void OnDead(DiedEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
 
             ev.Player.ClearInventory();
 
@@ -133,6 +139,8 @@ namespace DereGunGame.Handlers
 
         public void OnReload(ReloadingWeaponEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
             if (ev.Firearm.Type == ItemType.ParticleDisruptor) return;
             byte mult = getGunLevel(ev.Player).ReloadSpeedMultiplier;
             if (ev.IsAllowed)
@@ -174,6 +182,8 @@ namespace DereGunGame.Handlers
 
         public void OnPlayerSpawned(SpawnedEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
             if (Round.IsEnded) return;
             if (!plugin.Leaderboard.ContainsKey(ev.Player)) plugin.Leaderboard.Add(ev.Player, 0);
 
@@ -202,17 +212,23 @@ namespace DereGunGame.Handlers
 
         public void OnDroppingItem(DroppingItemEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
             ev.IsAllowed = false;
         }
 
         public void OnDroppingAmmo(DroppingAmmoEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
             ev.IsAllowed = false;
         }
 
         public void OnPickingUpItem(PickingUpItemEventArgs ev)
         {
-            if(!plugin.Config.DeathDrops.Values.Contains(ev.Pickup.Type))
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
+            if (!plugin.Config.DeathDrops.Values.Contains(ev.Pickup.Type))
             {
                 ev.Pickup.Destroy();
                 ev.IsAllowed = false;
@@ -222,6 +238,8 @@ namespace DereGunGame.Handlers
 
         public void OnLeft(LeftEventArgs ev)
         {
+            if (!DereGunGame.Singleton.GunGameRound) return;
+
             if (plugin.Leaderboard.ContainsKey(ev.Player)) plugin.Leaderboard.Remove(ev.Player);
         }
     }

@@ -22,10 +22,8 @@ namespace DereGunGame
         public override PluginPriority Priority { get; } = PluginPriority.Medium;
 
 
-        private static readonly DereGunGame Singleton = new DereGunGame();
+        public static DereGunGame Singleton { get; private set; }
 
-
-        public static DereGunGame Instance => Singleton;
 
         private Handlers.ServerHandler serverHandler;
         private Handlers.PlayerHandler playerHandler;
@@ -33,11 +31,13 @@ namespace DereGunGame
         public Dictionary<Exiled.API.Features.Player, int> Leaderboard = new();
         public ZoneType roundZone;
         public Dictionary<int, Vector3> roundSpawnpoints = new();
+        public bool GunGameRound = false;
 
-
+        
         public override void OnEnabled()
         {
             base.OnEnabled();
+            Singleton = this;
             RegisterEvents();
         }
 
@@ -63,6 +63,7 @@ namespace DereGunGame
             Player.DroppingAmmo += playerHandler.OnDroppingAmmo;
             Player.SpawningRagdoll += playerHandler.OnRagdoll;
             Map.Decontaminating += serverHandler.OnDecontamination;
+            
         }
 
         public void UnregisterEvents()
