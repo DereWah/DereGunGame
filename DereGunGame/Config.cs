@@ -15,16 +15,20 @@ namespace DereGunGame
 {
     public class Config : IConfig
     {
-
         public bool IsEnabled { get; set; } = true;
         public bool Debug { get; set; } = false;
 
-        public int HumiliationPenalty { get; set; } = -1;
+        [Description("Seconds in between respawning.")]
         public float RespawnDelay { get; set; } = 3f;
 
+        [Description("Settings for the melee weapon used for humiliations.")]
+        public int HumiliationPenalty { get; set; } = -3;
         public float JailbirdSwingDamage { get; set; } = 30;
         public float JailbirdChargeDamage { get; set; } = 50;
         public float JailbirdFlashDuration { get; set; } = 0.01f;
+
+        [Description("The minimum distance a player will be spawned to another player.")]
+        public float SpawnRadius { get; set; } = 10f;
 
         [Description("One item of the list below will be randomly dropped whenever a player dies.")]
         public Dictionary<int, ItemType> DeathDrops { get; set; } = new()
@@ -70,6 +74,16 @@ namespace DereGunGame
                 0,
                 new GunLevel()
                 {
+                    Loadout = new() { ItemType.GunRevolver, ItemType.Ammo44cal },
+                    Effects = new() { new Effect(EffectType.MovementBoost, 9999, 1) },
+                    Appearance = RoleTypeId.ChaosRepressor,
+                    MaxHealth = 100
+                }
+            },
+            {
+                1,
+                new GunLevel()
+                {
                     Loadout = new() { ItemType.GunFSP9, ItemType.ArmorLight , ItemType.Ammo9x19 },
 
                     Effects = new() { new Effect(EffectType.MovementBoost, 9999, 50) },
@@ -78,7 +92,7 @@ namespace DereGunGame
                 }
             },
             {
-                1,
+                2,
                 new GunLevel()
                 {
                     Loadout = new() { ItemType.GunCrossvec, ItemType.ArmorLight, ItemType.Ammo9x19 },
@@ -88,7 +102,7 @@ namespace DereGunGame
                 }
             },
             {
-                2,
+                3,
                 new GunLevel()
                 {
                     Loadout = new() { ItemType.GunShotgun, ItemType.ArmorHeavy, ItemType.Ammo12gauge },
@@ -96,17 +110,7 @@ namespace DereGunGame
                     Appearance = RoleTypeId.ChaosRepressor,
                     MaxHealth = 200
                 }
-            },
-            {
-                3,
-                new GunLevel()
-                {
-                    Loadout = new() { ItemType.GunRevolver, ItemType.Ammo44cal },
-                    Effects = new() { new Effect(EffectType.MovementBoost, 9999, 1) },
-                    Appearance = RoleTypeId.ChaosRepressor,
-                    MaxHealth = 100
-                }
-            },            
+            },       
             {
                 4,
                 new GunLevel()
@@ -131,9 +135,9 @@ namespace DereGunGame
                 6,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunFRMG0, ItemType.ArmorCombat, ItemType.Ammo556x45 },
+                    Loadout = new() { ItemType.GunLogicer, ItemType.Medkit, ItemType.ArmorCombat, ItemType.Ammo762x39 },
                     Effects = new() { new Effect(EffectType.MovementBoost, 1, 1) },
-                    Appearance = RoleTypeId.NtfCaptain,
+                    Appearance = RoleTypeId.ChaosMarauder,
                     MaxHealth = 100
                 }
             },
@@ -141,12 +145,13 @@ namespace DereGunGame
                 7,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunLogicer, ItemType.Medkit, ItemType.ArmorCombat, ItemType.Ammo762x39 },
+                    Loadout = new() { ItemType.GunFRMG0, ItemType.ArmorCombat, ItemType.Ammo556x45 },
                     Effects = new() { new Effect(EffectType.MovementBoost, 1, 1) },
-                    Appearance = RoleTypeId.ChaosMarauder,
+                    Appearance = RoleTypeId.NtfCaptain,
                     MaxHealth = 50
                 }
             },
+
             {
                 8,
                 new GunLevel()
@@ -224,7 +229,7 @@ namespace DereGunGame
                     Loadout = new() { ItemType.Jailbird, ItemType.Medkit, ItemType.ArmorCombat },
                     Effects = new() { new Effect(EffectType.MovementBoost, 3, 1) },
                     Appearance = RoleTypeId.Tutorial,
-                    MaxHealth = 100
+                    MaxHealth = 80
                 }
             }
         };

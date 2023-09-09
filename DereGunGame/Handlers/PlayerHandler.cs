@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace DereGunGame.Handlers
 {
@@ -30,98 +31,112 @@ namespace DereGunGame.Handlers
 
         public void OnDying(DyingEventArgs ev)
         {
+            //remove all drops, including AMMOS
             foreach (AmmoType at in Enum.GetValues(typeof(AmmoType))) ev.Player.SetAmmo(at, 0);
             ev.Player.ClearInventory();
+
+            //replace the drops with a random drop out of the config.
             ev.Player.AddItem(plugin.Config.DeathDrops.Values.ToList().RandomItem());
-            Log.Info("Dying");
         }
 
         private void showLeaderboard(Player p1)
         {
+            //do not display the leaderboard after the round winner is being displayed.
             if (Round.IsEnded) return;
-            Dictionary<Player, int> ordered = plugin.Leaderboard.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
-            foreach(Player p in Player.List) p.Broadcast(30, $"{ordered.Keys.First().Nickname} in the lead [{ordered[ordered.Keys.First()]+1} / {plugin.Config.GunLevels.Count()}]. You: #{ordered.Keys.ToList().IndexOf(p)+1}", shouldClearPrevious: true);
+            //get sorted list of all players and their level and display it to all players.
+            Dictionary<Player, int> ordered = plugin.Leaderboard.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+            foreach(Player p in Player.List) p.Broadcast(30, $"<color=#f6aa1c>{ordered.Keys.First().Nickname}<color=#621708> in the lead <color=#941b0c>[{ordered[ordered.Keys.First()]+1} / {plugin.Config.GunLevels.Count()}].<color=#bc3908> You: <color=#f6aa1c>#{ordered.Keys.ToList().IndexOf(p)+1}", shouldClearPrevious: true);
+        }
+
+        public GunLevel getGunLevel(Player player)
+        {
+            if (player == null) return null;
+
+            int level = plugin.Leaderboard.ContainsKey(player) ? plugin.Leaderboard[player] : 0;
+
+            if (plugin.Config.GunLevels.ContainsKey(level)) return plugin.Config.GunLevels[level];
+  
+            return null;
+        }
+
+        public void MakeEquipFirstWeapon(Player player)
+        {
+            Timing.CallDelayed(0.1f, () =>
+            {
+                foreach (Item i in player.Items)
+                {
+                    if (player.CurrentItem != i)
+                    {
+                        player.CurrentItem = i;
+                    }
+
+                    Log.Info(i);
+                    break;
+                }
+
+            });
         }
 
         public void OnDead(DiedEventArgs ev)
         {
-            if (ev.Attacker == null) return;
-            Log.Info("Died");
+
             ev.Player.ClearInventory();
 
-            // Handle disconnection. When falling down attacker is not set, so we skip
-            if (!ev.Player.IsConnected || !plugin.Leaderboard.ContainsKey(ev.Player) || (ev.Attacker == null && !(ev.DamageHandler.Type == DamageType.Falldown))) return;
+            // Handle disconnection.
+            if (ev.DamageHandler.Type == DamageType.Unknown) return;
 
-            // get the gun level of the attacker, if set.
-            GunLevel gunLevel = plugin.Config.GunLevels.ContainsKey(plugin.Leaderboard[ev.Attacker]) ? (plugin.Config.GunLevels[plugin.Leaderboard[ev.Attacker]]) : null;
-
-            bool humiliation = ((ev.DamageHandler.Type == DamageType.Jailbird && !gunLevel.Loadout.Contains(ItemType.Jailbird)) || ev.DamageHandler.IsSuicide);
+            //We don't care about kills when round is ended.
             if (Round.IsEnded) return;
 
+            GunLevel AttackerGunLevel = ev.Attacker != null ? getGunLevel(ev.Attacker) : getGunLevel(ev.Player);
+            bool humiliation = (ev.DamageHandler.IsSuicide ||
+                (ev.DamageHandler.Type == DamageType.Jailbird && !AttackerGunLevel.Loadout.Contains(ItemType.Jailbird)) || 
+                ev.DamageHandler.Type == DamageType.Falldown);
             if (humiliation)
             {
-                plugin.Leaderboard[ev.Player] = plugin.Leaderboard[ev.Player] + plugin.Config.HumiliationPenalty >= 0 ? plugin.Leaderboard[ev.Player] + plugin.Config.HumiliationPenalty : plugin.Leaderboard[ev.Player] = 0;
-                ev.Player.ShowHint($"Humiliated by {ev.Attacker.Nickname}!", 3);
-                Cassie.Message("Humiliation!", false, false, true);
+                if (plugin.Leaderboard[ev.Player] + plugin.Config.HumiliationPenalty >= 0) plugin.Leaderboard[ev.Player] += plugin.Config.HumiliationPenalty;
+                else plugin.Leaderboard[ev.Player] = 0;
+                Player EventAttacker = ev.Attacker != null ? ev.Attacker : ev.Player;
+                ev.Player.ShowHint($"<color=#f5a742>Humiliated by </color><color=#660708>{EventAttacker.Nickname}<color=#f5a742>!", 3);
+                Cassie.Message($".G7 {EventAttacker.Nickname} Humiliated {ev.Player.Nickname}", false, false, true);
                 showLeaderboard(ev.Player);
+
                 return;
-            }
-
-            if (ev.DamageHandler.IsSuicide) return;
-
-            plugin.Leaderboard[ev.Attacker] = plugin.Leaderboard[ev.Attacker] + 1;
-            gunLevel = plugin.Config.GunLevels.ContainsKey(plugin.Leaderboard[ev.Attacker]) ? (plugin.Config.GunLevels[plugin.Leaderboard[ev.Attacker]]) : null;
-            if (plugin.Leaderboard[ev.Attacker] > plugin.Config.GunLevels.Count()-1)
-            {
-                if(Round.IsEnded) return;
-                Round.EndRound();
-                Map.ClearBroadcasts();
-                Map.Broadcast(5, $"<color=red>{ev.Attacker.Nickname} has won the GunGame!");
-                Cassie.Message("Game Over", false, false, true);
-                Timing.CallDelayed(5f, () => Round.Restart());
-                
             }
             else
             {
-                if (gunLevel == null) return;
-                gunLevel.giveLoadout(ev.Attacker, plugin);
-                showLeaderboard(ev.Player);
-                ev.Attacker.ShowHint($"LV: {plugin.Leaderboard[ev.Attacker] + 1} / {plugin.Config.GunLevels.Count()}");
-                Timing.CallDelayed(0.1f, () =>
+                plugin.Leaderboard[ev.Attacker] += 1;
+                AttackerGunLevel = getGunLevel(ev.Attacker);
+                bool FinalKill = !(plugin.Leaderboard[ev.Attacker] <= plugin.Config.GunLevels.Count() - 1);
+                if (!FinalKill)
                 {
-                    foreach (Item i in ev.Attacker.Items)
-                    {
-                        if (ev.Attacker.CurrentItem != i)
-                        {
-                            ev.Attacker.CurrentItem = i;
-                        }
-
-                        Log.Info(i);
-                        break;
-                    }
-
-                });
-                
-
+                    if (AttackerGunLevel == null) return;
+                    AttackerGunLevel.giveLoadout(ev.Attacker, plugin);
+                    showLeaderboard(ev.Player);
+                    ev.Attacker.ShowHint($"<color=#00171F>LV: <color=#003459>{plugin.Leaderboard[ev.Attacker] + 1} </color>/<color=#007ea7> {plugin.Config.GunLevels.Count()}");
+                    Cassie.Clear();
+                    Cassie.Message($"{ev.Attacker.Nickname} killed {ev.Player.Nickname}", false, false, true);
+                    MakeEquipFirstWeapon(ev.Attacker);
+                }
+                else
+                {
+                    Round.EndRound();
+                    Map.ClearBroadcasts();
+                    Map.Broadcast(5, $"<color=#ff9500>{ev.Attacker.Nickname}<color=#ffa200> has won<color=#ffaa00> the <color=#ffb700>Gun<color=#ffc300>Game!", shouldClearPrevious: true);
+                    Cassie.Message("Game Over", false, false, true);
+                    foreach (Player player in Player.List) player.ClearInventory();
+                    Timing.CallDelayed(5f, () => Round.Restart());
+                    plugin.roundSpawnpoints.Clear();
+                }
             }
         }
 
 
-
-        //bugged in exiled 8.1.0
-        public void OnChargingJailbird(ChargingJailbirdEventArgs ev)
-        {
-            Log.Info("Charging jailbird");
-            ((Jailbird)ev.Item).FlashDuration = 0f;
-            ev.IsAllowed = false;
-        }
-
         public void OnReload(ReloadingWeaponEventArgs ev)
         {
-            Log.Info("Reload");
             if (ev.Firearm.Type == ItemType.ParticleDisruptor) return;
-            byte mult = plugin.Config.GunLevels[plugin.Leaderboard[ev.Player]].ReloadSpeedMultiplier;
+            byte mult = getGunLevel(ev.Player).ReloadSpeedMultiplier;
             if (ev.IsAllowed)
             {
                 ev.Player.EnableEffect(new Effect(EffectType.Scp1853, 1f, mult));
@@ -131,17 +146,42 @@ namespace DereGunGame.Handlers
 
         public void RandomTeleport(Player player)
         {
-            if(player.IsAlive) player.Teleport(plugin.roundSpawnpoints.Values.ToList().RandomItem());
+            bool FitLocation = false;
+            Vector3 ActualLocation = plugin.roundSpawnpoints.Values.ToList().RandomItem();
+            int attempt = 0;
+
+            if (plugin.roundSpawnpoints.IsEmpty()) return;
+
+            while(FitLocation == false && attempt < 10)
+            {
+                ActualLocation = plugin.roundSpawnpoints.Values.ToList().RandomItem();
+                FitLocation = true;
+                foreach(Player OtherPlayer in Player.List.Where(p => p.IsAlive && p != player))
+                {
+                    if (Math.Abs((Vector3.Distance(ActualLocation, OtherPlayer.Position))) > plugin.Config.SpawnRadius)
+                    {
+                        Log.Info((Vector3.Distance(ActualLocation, OtherPlayer.Position)));
+                        FitLocation = true;
+                    }
+                    else
+                    {
+                        FitLocation = false;
+                        break;
+                    }
+                }
+                attempt++;
+            }
+            if (FitLocation == false) ActualLocation = plugin.roundSpawnpoints.Values.ToList().RandomItem();
+            if (player.IsAlive) player.Teleport(ActualLocation);
         }
 
         public void OnPlayerSpawned(SpawnedEventArgs ev)
         {
             if (Round.IsEnded) return;
-
-            Log.Info("Spawned");
             if (!plugin.Leaderboard.ContainsKey(ev.Player)) plugin.Leaderboard.Add(ev.Player, 0);
 
-            GunLevel gunLevel = plugin.Config.GunLevels.ContainsKey(plugin.Leaderboard[ev.Player]) ? plugin.Config.GunLevels[plugin.Leaderboard[ev.Player]] : null;
+            GunLevel gunLevel = getGunLevel(ev.Player);
+           
             // teleport players after they spawned with their role.
             if (ev.Player.Role.Type != RoleTypeId.Spectator && gunLevel != null)
             {
@@ -154,8 +194,7 @@ namespace DereGunGame.Handlers
                 //spawn players after they spawned in spectators.
                 Timing.CallDelayed(plugin.Config.RespawnDelay, () =>
                 {
-                    Log.Info($"Delayed, {gunLevel.Appearance}");
-                    gunLevel = plugin.Config.GunLevels.ContainsKey(plugin.Leaderboard[ev.Player]) ? plugin.Config.GunLevels[plugin.Leaderboard[ev.Player]] : null;
+                    gunLevel = getGunLevel(ev.Player);
                     gunLevel.spawnPlayer(ev.Player);
                 });
                 

@@ -62,7 +62,6 @@ namespace DereGunGame
             Player.Dying += playerHandler.OnDying;
             Player.DroppingAmmo += playerHandler.OnDroppingAmmo;
             Player.SpawningRagdoll += playerHandler.OnRagdoll;
-            Item.ChargingJailbird += playerHandler.OnChargingJailbird;
         }
 
         public void UnregisterEvents()
@@ -76,7 +75,6 @@ namespace DereGunGame
             Player.PickingUpItem -= playerHandler.OnPickingUpItem;
             Player.Dying -= playerHandler.OnDying;
             Player.DroppingAmmo -= playerHandler.OnDroppingAmmo;
-            Item.ChargingJailbird -= playerHandler.OnChargingJailbird;
 
             playerHandler = null;
             serverHandler = null;

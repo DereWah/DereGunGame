@@ -29,7 +29,7 @@ namespace DereGunGame.Handlers
             plugin.roundZone = plugin.Config.ZoneTypes.GetRandomValue().Value;
 
             Cassie.Message("Gun Game . First player to get a kill with every weapon wins", false, true, true);
-
+            Log.Info(plugin.roundZone);
             if (plugin.roundZone == ZoneType.Surface)
             {
                 plugin.roundSpawnpoints = plugin.Config.SpawnLocations;
@@ -40,20 +40,26 @@ namespace DereGunGame.Handlers
                 {
                     //prevent spawning in unreachable rooms such as nuke or hcz049
                     if (door.Room.Type == RoomType.Hcz049 || door.Room.Type == RoomType.HczNuke || door.Room.Type == RoomType.Hcz106 || door.Room.Type == RoomType.Hcz049) continue;
-
+                    //allow all doors in the play zone to be opened
                     door.KeycardPermissions = KeycardPermissions.None;
-                    plugin.roundSpawnpoints.Add(plugin.roundSpawnpoints.Count(), door.Position+new Vector3(0, 1, 0));
+                    if(!door.Type.IsElevator() && door.Room.Type != RoomType.LczClassDSpawn) plugin.roundSpawnpoints.Add(plugin.roundSpawnpoints.Count(), door.Position+new Vector3(0, 1, 0));
                     door.IsOpen = true;
                 }
                 else
                 {
+                    //lock all the doors outside of the play zone
                     door.IsOpen = false;
                     door.KeycardPermissions = KeycardPermissions.AlphaWarhead;
                 }
-                if (door.IsElevator || door.IsCheckpoint) door.ChangeLock(DoorLockType.AdminCommand);
-                if (door.IsGate) door.IsOpen = true;
+                //block elevators and checkpoint from being opened
+                if (door.IsElevator || door.IsPartOfCheckpoint)
+                {
+                    door.IsOpen = false;
+                    door.ChangeLock(DoorLockType.AdminCommand);
+                }
             }
-            Log.Info("Finished loading doors.");
+
+            //spawn all the players in spectator.
             foreach (Player player in Player.List)
             {
                 plugin.Leaderboard.Add(player, 0);
