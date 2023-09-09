@@ -70,8 +70,6 @@ namespace DereGunGame.Handlers
                     {
                         player.CurrentItem = i;
                     }
-
-                    Log.Info(i);
                     break;
                 }
 
@@ -160,7 +158,6 @@ namespace DereGunGame.Handlers
                 {
                     if (Math.Abs((Vector3.Distance(ActualLocation, OtherPlayer.Position))) > plugin.Config.SpawnRadius)
                     {
-                        Log.Info((Vector3.Distance(ActualLocation, OtherPlayer.Position)));
                         FitLocation = true;
                     }
                     else

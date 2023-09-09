@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;
-using Item = Exiled.Events.Handlers.Item;
+using Map = Exiled.Events.Handlers.Map;
 using UnityEngine;
 
 namespace DereGunGame
@@ -62,6 +62,7 @@ namespace DereGunGame
             Player.Dying += playerHandler.OnDying;
             Player.DroppingAmmo += playerHandler.OnDroppingAmmo;
             Player.SpawningRagdoll += playerHandler.OnRagdoll;
+            Map.Decontaminating += serverHandler.OnDecontamination;
         }
 
         public void UnregisterEvents()
@@ -75,6 +76,7 @@ namespace DereGunGame
             Player.PickingUpItem -= playerHandler.OnPickingUpItem;
             Player.Dying -= playerHandler.OnDying;
             Player.DroppingAmmo -= playerHandler.OnDroppingAmmo;
+            Map.Decontaminating -= serverHandler.OnDecontamination;
 
             playerHandler = null;
             serverHandler = null;

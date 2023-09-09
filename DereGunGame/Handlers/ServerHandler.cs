@@ -11,6 +11,7 @@ using DereGunGame.Types;
 using Exiled.API.Features.Doors;
 using Exiled.API.Extensions;
 using UnityEngine;
+using Exiled.Events.EventArgs.Map;
 
 namespace DereGunGame.Handlers
 {
@@ -22,14 +23,17 @@ namespace DereGunGame.Handlers
             this.plugin = plugin;
         }
 
+        public void OnDecontamination(DecontaminatingEventArgs ev)
+        {
+            ev.IsAllowed = false;
+        }
         public void OnRoundStart()
         {
             Round.IsLocked = true;
             plugin.Leaderboard.Clear();
             plugin.roundZone = plugin.Config.ZoneTypes.GetRandomValue().Value;
-
+            
             Cassie.Message("Gun Game . First player to get a kill with every weapon wins", false, true, true);
-            Log.Info(plugin.roundZone);
             if (plugin.roundZone == ZoneType.Surface)
             {
                 plugin.roundSpawnpoints = plugin.Config.SpawnLocations;
