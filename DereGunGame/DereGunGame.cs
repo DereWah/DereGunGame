@@ -32,6 +32,7 @@ namespace DereGunGame
         public ZoneType roundZone;
         public Dictionary<int, Vector3> roundSpawnpoints = new();
         public bool GunGameRound = false;
+        public bool FirstKill = false;
 
         
         public override void OnEnabled()

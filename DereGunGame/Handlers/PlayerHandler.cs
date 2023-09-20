@@ -119,8 +119,12 @@ namespace DereGunGame.Handlers
                     AttackerGunLevel.giveLoadout(ev.Attacker, plugin);
                     showLeaderboard(ev.Player);
                     ev.Attacker.ShowHint($"<color=#00171F>LV: <color=#003459>{plugin.Leaderboard[ev.Attacker] + 1} </color>/<color=#007ea7> {plugin.Config.GunLevels.Count()}");
-                    Cassie.Clear();
-                    Cassie.Message($"{ev.Attacker.Nickname} killed {ev.Player.Nickname}", false, false, true);
+                    if (!DereGunGame.Singleton.FirstKill)
+                    {
+                        DereGunGame.Singleton.FirstKill = true;
+                        Cassie.Message("First blood.");
+                    }
+                    if(!Cassie.IsSpeaking) Cassie.Message($"{ev.Attacker.Nickname} killed {ev.Player.Nickname}", false, false, true);
                     MakeEquipFirstWeapon(ev.Attacker);
                 }
                 else

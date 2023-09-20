@@ -30,6 +30,7 @@ namespace DereGunGame.Handlers
         }
         public void OnRoundStart()
         {
+            DereGunGame.Singleton.FirstKill = false;
             if (DereGunGame.Singleton.Config.AlwaysStart) DereGunGame.Singleton.GunGameRound = true;
             if (!DereGunGame.Singleton.GunGameRound) return;
 
