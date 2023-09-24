@@ -1,4 +1,4 @@
-# DereGunGame
+# DereGunGame ![Downloads](https://img.shields.io/github/downloads/DereWah/DereGunGame/total)
 DereGunGame is an EXILED plugin that adds the GunGame gamemode to your server. It is completely customizable, and allows you to create exclusive levels to make each round unique.
 
 ## Gun Game (Or Golden Gun)
