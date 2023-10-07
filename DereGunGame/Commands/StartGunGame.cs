@@ -28,8 +28,8 @@ namespace DereGunGame.Commands
             }
             if (Round.IsLobby)
             {
-                DereGunGame.Singleton.GunGameRound = !DereGunGame.Singleton.GunGameRound;
-                response = $"GunGame round set to {DereGunGame.Singleton.GunGameRound}";
+                DereGunGame.Instance.GunGameRound = !DereGunGame.Instance.GunGameRound;
+                response = $"GunGame round set to {DereGunGame.Instance.GunGameRound}";
             }
             else
             {

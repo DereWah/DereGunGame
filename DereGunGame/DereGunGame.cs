@@ -11,6 +11,7 @@ using Player = Exiled.Events.Handlers.Player;
 using Server = Exiled.Events.Handlers.Server;
 using Map = Exiled.Events.Handlers.Map;
 using UnityEngine;
+using DereGunGame.Utils;
 
 namespace DereGunGame
 {
@@ -22,22 +23,23 @@ namespace DereGunGame
         public override PluginPriority Priority { get; } = PluginPriority.Medium;
 
 
-        public static DereGunGame Singleton { get; private set; }
-
+        public static DereGunGame Instance;
 
         private Handlers.ServerHandler serverHandler;
         private Handlers.PlayerHandler playerHandler;
 
         public Dictionary<Exiled.API.Features.Player, int> Leaderboard = new();
         public ZoneType roundZone;
-        public Dictionary<int, Vector3> roundSpawnpoints = new();
+        public List<Vector3> roundSpawnpoints = new();
         public bool GunGameRound = false;
+        public Utilities Utilities;
 
         
         public override void OnEnabled()
         {
             base.OnEnabled();
-            Singleton = this;
+            Instance = this;
+            Utilities = new Utilities(this);
             RegisterEvents();
         }
 

@@ -25,11 +25,12 @@ namespace DereGunGame
         [Description("Seconds in between respawning.")]
         public float RespawnDelay { get; set; } = 3f;
 
-        [Description("Settings for the melee weapon used for humiliations.")]
-        public int HumiliationPenalty { get; set; } = -3;
-        public float JailbirdSwingDamage { get; set; } = 30;
-        public float JailbirdChargeDamage { get; set; } = 50;
-        public float JailbirdFlashDuration { get; set; } = 0.01f;
+        
+
+        [Description("Settings for the humiliation system. The melee item is the Jailbird.")]
+        public JailbirdSettings JailbirdSettings { get; set; } = new JailbirdSettings();
+        
+
 
         [Description("The minimum distance a player will be spawned to another player.")]
         public float SpawnRadius { get; set; } = 10f;

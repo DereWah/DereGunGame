@@ -36,15 +36,15 @@ namespace DereGunGame.Types
 
         public void giveLoadout(Player player, DereGunGame plugin)
         {
-            player.ClearInventory();
-            //foreach (AmmoType at in Enum.GetValues(typeof(AmmoType))) player.SetAmmo(at, 0);
+            plugin.Utilities.ClearInventory(player);
+
             player.SetFriendlyFire(Appearance, 1);
             player.AddItem(Loadout);
             
             Jailbird jb = player.AddItem(ItemType.Jailbird) as Jailbird;
-            jb.FlashDuration = plugin.Config.JailbirdFlashDuration;
-            jb.ChargeDamage = plugin.Config.JailbirdChargeDamage;
-            jb.MeleeDamage = plugin.Config.JailbirdSwingDamage;
+            jb.FlashDuration = plugin.Config.JailbirdSettings.JailbirdFlashDuration;
+            jb.ChargeDamage = plugin.Config.JailbirdSettings.JailbirdChargeDamage;
+            jb.MeleeDamage = plugin.Config.JailbirdSettings.JailbirdSwingDamage;
             player.EnableEffects(Effects);
             player.MaxHealth = MaxHealth;
             

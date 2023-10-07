@@ -21,7 +21,8 @@ namespace DereGunGame.Commands
         /// <inheritdoc/>
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (!sender.CheckPermission("deregungame.getlocation"))
+            if (!sender.CheckPermission("deregungame.getlocation")
+                || sender == Server.Host.Sender)
             {
                 response = "You don't have the permission deregungame.getlocation";
                 return false;
