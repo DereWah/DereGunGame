@@ -64,6 +64,7 @@ namespace DereGunGame.Handlers
                 || killedByJailbird
                 || ev.DamageHandler.Type == DamageType.Falldown);
 
+
             if (humiliation)
             {
                 if (plugin.Leaderboard[ev.Player] + config.JailbirdSettings.HumiliationPenalty >= 0)
