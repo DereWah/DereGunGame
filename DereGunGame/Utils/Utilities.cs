@@ -24,18 +24,26 @@ namespace DereGunGame.Utils
             config = plugin.Config;
         }
 
+        /// <summary>
+        /// Clears a player inventory, including ammos.
+        /// </summary>
+        /// <param name="player"></param>
         public void ClearInventory(Player player)
         {
-            foreach (AmmoType at in Enum.GetValues(typeof(AmmoType)))
+            foreach (AmmoType ammoType in Enum.GetValues(typeof(AmmoType)))
             {
-                if(player.GetAmmo(at) > 0)
+                if(ammoType is not AmmoType.None)
                 {
-                    player.SetAmmo(at, 0);
+                    player.SetAmmo(ammoType, 0);
                 }
             }
             player.ClearInventory();
         }
 
+        /// <summary>
+        /// Shows the leaderboard to a player.
+        /// </summary>
+        /// <param name="player">The player to show the leaderboard to.</param>
         public void ShowLeaderboard(Player player)
         {
             //do not display the leaderboard after the round winner is being displayed.
@@ -45,7 +53,7 @@ namespace DereGunGame.Utils
                 Dictionary<Player, int> ordered = plugin.Leaderboard.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
                 foreach (Player p in Player.List)
                 {
-                    p.Broadcast(30, $"<color=#f6aa1c>{ordered.Keys.First().Nickname}<color=#621708>"
+                    p.Broadcast(30, $"<color=#f6aa1c>{ordered.Keys.First().Nickname}<color=#621708> "
                         + $"in the lead <color=#941b0c>[{ordered[ordered.Keys.First()] + 1} / {plugin.Config.GunLevels.Count()}]."
                         + $"<color=#bc3908> You: <color=#f6aa1c>#{ordered.Keys.ToList().IndexOf(p) + 1}", shouldClearPrevious: true);
                 }
@@ -61,7 +69,7 @@ namespace DereGunGame.Utils
         public GunLevel GetGunLevel(Player player)
         {
             GunLevel gunLevel = null;
-            if (player != null)
+            if (player is not null)
             {
                 if (!plugin.Leaderboard.TryGetValue(player, out int level))
                 {
@@ -73,6 +81,10 @@ namespace DereGunGame.Utils
             return gunLevel;
         }
 
+        /// <summary>
+        /// Makes a player equip the first weapon in their inventory.
+        /// </summary>
+        /// <param name="player"></param>
         public void MakeEquipFirstWeapon(Player player)
         {
             Timing.CallDelayed(0.1f, () =>
@@ -82,6 +94,10 @@ namespace DereGunGame.Utils
             });
         }
 
+        /// <summary>
+        /// Ends a round and prepares for the next one.
+        /// </summary>
+        /// <param name="winner">The winner of the round.</param>
         public void EndRound(Player winner)
         {
             Round.EndRound();
@@ -95,11 +111,16 @@ namespace DereGunGame.Utils
             Timing.CallDelayed(5f, () => Round.Restart());
             plugin.roundSpawnpoints.Clear();
         }
-
+        /// <summary>
+        /// Gives a kill to a player.
+        /// </summary>
+        /// <param name="attacker">The player who did the kill.</param>
+        /// <param name="victim">The player that got killed.</param>
         public void AwardKill(Player attacker, Player victim)
         {
+            plugin.Leaderboard[attacker] += 1;
             GunLevel AttackerGunLevel = GetGunLevel(attacker);
-            if (AttackerGunLevel != null)
+            if (AttackerGunLevel is not null)
             {
                 AttackerGunLevel.giveLoadout(attacker, plugin);
                 plugin.Utilities.ShowLeaderboard(victim);
@@ -109,7 +130,10 @@ namespace DereGunGame.Utils
                 plugin.Utilities.MakeEquipFirstWeapon(attacker);
             }
         }
-
+        /// <summary>
+        /// Teleports a player to a random location in the spawnpoints pool.
+        /// </summary>
+        /// <param name="player">The player to teleport.</param>
         public void RandomTeleport(Player player)
         {
             if (!plugin.roundSpawnpoints.IsEmpty())
@@ -148,6 +172,10 @@ namespace DereGunGame.Utils
             }
         }
 
+        /// <summary>
+        /// Prepares the map and setup doors for the next GunGame.
+        /// </summary>
+        /// <param name="roundZone">The zone in which the GunGame will take place.</param>
         public void PrepareMap(ZoneType roundZone)
         {
             if (roundZone == ZoneType.Surface)

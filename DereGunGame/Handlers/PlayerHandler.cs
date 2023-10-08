@@ -55,7 +55,7 @@ namespace DereGunGame.Handlers
                 return;
             }
 
-            Player EventAttacker = ev.Attacker != null ? ev.Attacker : ev.Player;
+            Player EventAttacker = ev.Attacker is not null ? ev.Attacker : ev.Player;
             GunLevel AttackerGunLevel = plugin.Utilities.GetGunLevel(EventAttacker);
 
             bool killedByJailbird = (ev.DamageHandler.Type == DamageType.Jailbird
@@ -65,35 +65,25 @@ namespace DereGunGame.Handlers
                 || ev.DamageHandler.Type == DamageType.Falldown);
 
 
-            if (humiliation)
+            switch (humiliation)
             {
-                if (plugin.Leaderboard[ev.Player] + config.JailbirdSettings.HumiliationPenalty >= 0)
-                {
+                case true when plugin.Leaderboard[ev.Player] + config.JailbirdSettings.HumiliationPenalty >= 0:
                     plugin.Leaderboard[ev.Player] += config.JailbirdSettings.HumiliationPenalty;
-                }
-                else
-                {
+                    goto default;
+                case true:
                     plugin.Leaderboard[ev.Player] = 0;
-                }
-                
-                
-                ev.Player.ShowHint($"<color=#f5a742>Humiliated by </color><color=#660708>{EventAttacker.Nickname}<color=#f5a742>!", 3);
-                Cassie.Message($".G7 {EventAttacker.Nickname} Humiliated {ev.Player.Nickname}", false, false, true);
-                plugin.Utilities.ShowLeaderboard(ev.Player);
-            }
-            else
-            {
-                plugin.Leaderboard[ev.Attacker] += 1;
-                bool FinalKill = !(plugin.Leaderboard[ev.Attacker] <= config.GunLevels.Count() - 1);
-
-                if (!FinalKill)
-                {
-                    plugin.Utilities.AwardKill(EventAttacker, ev.Player);
-                }
-                else
-                {
+                    goto default;
+                case false when (plugin.Leaderboard[ev.Attacker] + 1 >= config.GunLevels.Count() - 1):
                     plugin.Utilities.EndRound(EventAttacker);
-                }
+                    break;
+                case false:
+                    plugin.Utilities.AwardKill(EventAttacker, ev.Player);
+                    break;
+                default:
+                    ev.Player.ShowHint($"<color=#f5a742>Humiliated by </color><color=#660708>{EventAttacker.Nickname}<color=#f5a742>!", 3);
+                    Cassie.Message($".G7 {EventAttacker.Nickname} Humiliated {ev.Player.Nickname}", false, false, true);
+                    plugin.Utilities.ShowLeaderboard(ev.Player);
+                    break;
             }
         }
 
@@ -103,9 +93,14 @@ namespace DereGunGame.Handlers
 
             if (ev.Firearm.Type != ItemType.ParticleDisruptor)
             {
-                byte mult = plugin.Utilities.GetGunLevel(ev.Player).ReloadSpeedMultiplier;
-                ev.Player.EnableEffect(new Effect(EffectType.Scp1853, 1f, mult));
                 ev.Player.SetAmmo(ev.Firearm.AmmoType, ev.Firearm.MaxAmmo);
+                
+                if(ev.Firearm.Ammo < ev.Firearm.MaxAmmo)
+                {
+                    byte mult = plugin.Utilities.GetGunLevel(ev.Player).ReloadSpeedMultiplier;
+                    ev.Player.EnableEffect(new Effect(EffectType.Scp1853, 1f, mult));
+                }
+
             }
         }
 
@@ -120,32 +115,24 @@ namespace DereGunGame.Handlers
             }
 
             GunLevel gunLevel = plugin.Utilities.GetGunLevel(ev.Player);
-            
-            // teleport players after they spawned with their role.
-            if (ev.Player.Role.Type != RoleTypeId.Spectator)
-            {
-                if(gunLevel != null)
-                {
+
+            switch (ev.Player.Role.Type == RoleTypeId.Spectator) {
+                case false when gunLevel is not null:
+                    // teleport players after they spawned with their role.
                     plugin.Utilities.RandomTeleport(ev.Player);
                     gunLevel.giveLoadout(ev.Player, plugin);
-                }
-                else
-                {
+                    break;
+                case false:
                     Log.Error($"Could not find a GunLevel with numeric ID {plugin.Leaderboard[ev.Player]}.");
-                }
-                
+                    break;
+                default:
+                    //spawn players after they spawned in spectators.
+                    Timing.CallDelayed(plugin.Config.RespawnDelay, () =>
+                    {
+                        gunLevel.spawnPlayer(ev.Player);
+                    });
+                    break;
             }
-            else
-            {
-                //spawn players after they spawned in spectators.
-                Timing.CallDelayed(plugin.Config.RespawnDelay, () =>
-                {
-                    gunLevel.spawnPlayer(ev.Player);
-                });
-                
-            }
-
-
         }
 
         public void OnDroppingItem(DroppingItemEventArgs ev)
@@ -162,8 +149,6 @@ namespace DereGunGame.Handlers
             {
                 ev.IsAllowed = false;
             }
-
-            
         }
 
         public void OnPickingUpItem(PickingUpItemEventArgs ev)

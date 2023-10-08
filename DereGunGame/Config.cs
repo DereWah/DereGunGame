@@ -89,7 +89,7 @@ namespace DereGunGame
                 1,
                 new GunLevel()
                 {
-                    Loadout = new() { ItemType.GunFSP9, ItemType.ArmorLight , ItemType.Ammo9x19 },
+                    Loadout = new() { ItemType.GunFSP9, ItemType.ArmorLight , ItemType.Ammo9x19, },
 
                     Effects = new() { new Effect(EffectType.MovementBoost, 9999, 50) },
                     Appearance = RoleTypeId.FacilityGuard,
